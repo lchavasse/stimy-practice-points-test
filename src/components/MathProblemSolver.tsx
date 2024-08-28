@@ -295,6 +295,8 @@ export default function Component() {
   const [instructionHeight, setInstructionHeight] = useState('auto')
   const [questionFontSize, setQuestionFontSize] = useState(18) // Start with 18px font size for the question
   const questionRef = useRef<HTMLDivElement>(null)
+  const [showStepInstruction, setShowStepInstruction] = useState(true)
+  const cardContentRef = useRef<HTMLDivElement>(null)
 
   const ANIMATION_DELAY = 0.2 // in seconds (unchanged)
 
@@ -316,6 +318,16 @@ export default function Component() {
   })
 
   const problem = problems[problemIndex]
+
+  // Add this new state to track progress for each problem
+  const [problemProgress, setProblemProgress] = useState<{
+    [key: number]: {
+      currentStep: number;
+      completedSteps: string[];
+      isCompleted: boolean;
+      questionPoints: number;
+    };
+  }>({});
 
   const handleAnswer = (answer: string, event?: React.MouseEvent<HTMLButtonElement>) => {
     if (event) {
@@ -378,6 +390,7 @@ export default function Component() {
             setShowCompletionStars(false)
           }, 1000)
         }
+        saveProblemProgress(); // Save progress after updating state
       }, 1000)
     }
   }
@@ -399,17 +412,9 @@ export default function Component() {
   }, [isAnimating, questionPoints])
 
   const handleTryAnother = () => {
-    setProblemIndex((prevIndex) => (prevIndex + 1) % problems.length)
-    setCurrentStep(0)
-    setSelectedAnswer(null)
-    setIsCorrect(null)
-    setCompletedSteps([])
-    setIsCompleted(false)
-    setCurrentOptionIndex(0)
-    setQuestionPoints(0)
-    setFloatingPoints(0)
-    setPrevQuestionPoints(0)
-    setShowCounter(true) // Show the counter for the new problem
+    const nextIndex = (problemIndex + 1) % problems.length;
+    setProblemIndex(nextIndex);
+    loadProblemProgress(nextIndex);
   }
 
   const handlePrevOption = () => {
@@ -435,6 +440,10 @@ export default function Component() {
 
   const toggleAnimationType = () => {
     setUseSpringAnimation(prev => !prev)
+  }
+
+  const toggleStepInstruction = () => {
+    setShowStepInstruction(prev => !prev)
   }
 
   // Create a custom toggle component
@@ -493,27 +502,53 @@ export default function Component() {
   }, [problemIndex]);
 
   const handlePrevProblem = () => {
-    setProblemIndex((prevIndex) => (prevIndex - 1 + problems.length) % problems.length)
-    resetProblemState()
+    setProblemIndex((prevIndex) => {
+      const newIndex = (prevIndex - 1 + problems.length) % problems.length;
+      loadProblemProgress(newIndex);
+      return newIndex;
+    });
   }
 
   const handleNextProblem = () => {
-    setProblemIndex((prevIndex) => (prevIndex + 1) % problems.length)
-    resetProblemState()
+    setProblemIndex((prevIndex) => {
+      const newIndex = (prevIndex + 1) % problems.length;
+      loadProblemProgress(newIndex);
+      return newIndex;
+    });
   }
 
-  const resetProblemState = () => {
-    setCurrentStep(0)
-    setSelectedAnswer(null)
-    setIsCorrect(null)
-    setCompletedSteps([])
-    setIsCompleted(false)
-    setCurrentOptionIndex(0)
-    setQuestionPoints(0)
-    setFloatingPoints(0)
-    setPrevQuestionPoints(0)
-    setShowCounter(true)
+  const loadProblemProgress = (index: number) => {
+    const progress = problemProgress[index] || {
+      currentStep: 0,
+      completedSteps: [],
+      isCompleted: false,
+      questionPoints: 0,
+    };
+    setCurrentStep(progress.currentStep);
+    setCompletedSteps(progress.completedSteps);
+    setIsCompleted(progress.isCompleted);
+    setQuestionPoints(progress.questionPoints);
+    setSelectedAnswer(null);
+    setIsCorrect(null);
+    setCurrentOptionIndex(0);
+    setShowCounter(true);
   }
+
+  const saveProblemProgress = () => {
+    setProblemProgress(prev => ({
+      ...prev,
+      [problemIndex]: {
+        currentStep,
+        completedSteps,
+        isCompleted,
+        questionPoints,
+      }
+    }));
+  }
+
+  useEffect(() => {
+    saveProblemProgress();
+  }, [currentStep, completedSteps, isCompleted, questionPoints]);
 
   return (
     <div className="w-full h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900">
@@ -535,13 +570,16 @@ export default function Component() {
             </animated.span>
           </div>
         </div>
-        <CardContent className="flex-grow overflow-y-auto space-y-4 relative p-4">
+        <CardContent 
+          className="flex-grow overflow-y-auto p-4 flex flex-col"
+          ref={cardContentRef}
+        >
           <div 
             ref={questionRef}
-            className="text-lg font-semibold text-center text-gray-800 dark:text-gray-200 flex items-center justify-center"
+            className="text-lg font-semibold text-center text-gray-800 dark:text-gray-200 flex items-center justify-center mb-4"
             style={{ 
               fontSize: `${questionFontSize}px`,
-              minHeight: '48px', // Ensure space for up to two lines
+              minHeight: '48px',
               display: 'flex',
               alignItems: 'center',
             }}
@@ -578,7 +616,7 @@ export default function Component() {
             )}
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1 flex-grow overflow-y-auto">
             {completedSteps.map((step, index) => (
               <motion.div
                 key={index}
@@ -590,15 +628,23 @@ export default function Component() {
               </motion.div>
             ))}
           </div>
+        </CardContent>
 
+        {/* Updated docked instruction and steps section */}
+        <div className="bg-white dark:bg-gray-800 p-4 space-y-4 flex flex-col">
           {!isCompleted ? (
             <>
-              <div className="text-base font-medium text-center text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 p-2 rounded-md relative">
-                Step {currentStep + 1}: {problem.steps[currentStep].instruction}
-                {showFloatingPoints && (
-                  <FloatingPoints x={animationPosition.x} y={animationPosition.y} />
-                )}
-              </div>
+              {showStepInstruction && (
+                <div 
+                  ref={instructionRef}
+                  className="text-base font-medium text-center text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 p-2 rounded-md relative"
+                >
+                  {problem.steps[currentStep].instruction}
+                  {showFloatingPoints && (
+                    <FloatingPoints x={animationPosition.x} y={animationPosition.y} />
+                  )}
+                </div>
+              )}
               {isHorizontalMode ? (
                 <div className="flex items-center justify-between space-x-2">
                   <Button onClick={handlePrevOption} variant="outline" size="icon">
@@ -693,7 +739,7 @@ export default function Component() {
           )}
 
           <CompletionStars show={showCompletionStars} />
-        </CardContent>
+        </div>
       </Card>
 
       {/* Toggle buttons moved outside the card */}
@@ -725,6 +771,21 @@ export default function Component() {
             variant="outline"
           >
             <CustomToggle isActive={useSpringAnimation} />
+          </Button>
+        </div>
+
+        {/* Step instruction toggle */}
+        <div className="flex items-center space-x-2">
+          <div className="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 py-1 rounded shadow text-center">
+            <div>Step</div>
+            <div>instruction</div>
+          </div>
+          <Button
+            onClick={toggleStepInstruction}
+            className="rounded-full w-12 h-12"
+            variant="outline"
+          >
+            <CustomToggle isActive={showStepInstruction} />
           </Button>
         </div>
       </div>
