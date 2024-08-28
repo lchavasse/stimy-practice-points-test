@@ -326,6 +326,7 @@ export default function Component() {
       completedSteps: string[];
       isCompleted: boolean;
       questionPoints: number;
+      showCounter: boolean;
     };
   }>({});
 
@@ -406,6 +407,7 @@ export default function Component() {
         setTimeout(() => {
           setShowCompletionStars(false) // Hide stars after 2 seconds
         }, 2000)
+        saveProblemProgress(); // Save the updated progress
       }, 1000)
       return () => clearTimeout(timer)
     }
@@ -501,7 +503,10 @@ export default function Component() {
     adjustQuestionSize();
   }, [problemIndex]);
 
+  const [direction, setDirection] = useState(0);
+
   const handlePrevProblem = () => {
+    setDirection(-1);
     setProblemIndex((prevIndex) => {
       const newIndex = (prevIndex - 1 + problems.length) % problems.length;
       loadProblemProgress(newIndex);
@@ -510,6 +515,7 @@ export default function Component() {
   }
 
   const handleNextProblem = () => {
+    setDirection(1);
     setProblemIndex((prevIndex) => {
       const newIndex = (prevIndex + 1) % problems.length;
       loadProblemProgress(newIndex);
@@ -523,6 +529,7 @@ export default function Component() {
       completedSteps: [],
       isCompleted: false,
       questionPoints: 0,
+      showCounter: true,
     };
     setCurrentStep(progress.currentStep);
     setCompletedSteps(progress.completedSteps);
@@ -531,7 +538,7 @@ export default function Component() {
     setSelectedAnswer(null);
     setIsCorrect(null);
     setCurrentOptionIndex(0);
-    setShowCounter(true);
+    setShowCounter(progress.showCounter);
   }
 
   const saveProblemProgress = () => {
@@ -542,6 +549,7 @@ export default function Component() {
         completedSteps,
         isCompleted,
         questionPoints,
+        showCounter,
       }
     }));
   }
@@ -553,6 +561,7 @@ export default function Component() {
   return (
     <div className="w-full h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900">
       <Card className="w-[360px] h-[640px] overflow-hidden flex flex-col relative card">
+        {/* Header - stays fixed */}
         <div className="bg-purple-600 text-white p-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Button variant="ghost" size="icon" className="text-white" onClick={handlePrevProblem}>
@@ -570,175 +579,210 @@ export default function Component() {
             </animated.span>
           </div>
         </div>
-        <CardContent 
-          className="flex-grow overflow-y-auto p-4 flex flex-col"
-          ref={cardContentRef}
-        >
-          <div 
-            ref={questionRef}
-            className="text-lg font-semibold text-center text-gray-800 dark:text-gray-200 flex items-center justify-center mb-4"
-            style={{ 
-              fontSize: `${questionFontSize}px`,
-              minHeight: '48px',
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            {problem.question}
-            {showCounter && (
-              <motion.div
-                className="ml-2 bg-purple-200 dark:bg-purple-800 p-2 rounded-full flex items-center justify-center"
-                animate={{ scale: showPointsAnimation ? [1, 1.2, 1] : 1 }}
-                transition={{ duration: 0.3 }}
-                ref={counterRef}
-              >
-                <Star className="w-5 h-5 text-yellow-500" />
-                {isAnimating ? (
-                  <animated.span className="ml-1 text-base font-bold text-purple-600 dark:text-purple-300">
-                    {finalNumber.to(n => Math.floor(n))}
-                  </animated.span>
-                ) : useSpringAnimation ? (
-                  <animated.span className="ml-1 text-base font-bold text-purple-600 dark:text-purple-300">
-                    {springNumber.to(n => Math.floor(n))}
-                  </animated.span>
-                ) : (
-                  <motion.span
-                    key={questionPoints}
-                    initial={{ y: -20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.4 }} // increased from 0.2 to 0.4 seconds
-                    className="ml-1 text-base font-bold text-purple-600 dark:text-purple-300"
-                  >
-                    {questionPoints}
-                  </motion.span>
-                )}
-              </motion.div>
-            )}
-          </div>
 
-          <div className="space-y-1 flex-grow overflow-y-auto">
-            {completedSteps.map((step, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-sm font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 p-1 rounded-md"
+        {/* Animated content - positioned below the header */}
+        <div className="flex-grow relative overflow-hidden">
+          <AnimatePresence initial={false} custom={direction}>
+            <motion.div
+              key={problemIndex}
+              custom={direction}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 }
+              }}
+              variants={{
+                enter: (direction: number) => ({
+                  x: direction > 0 ? 1000 : -1000,
+                  opacity: 0
+                }),
+                center: {
+                  zIndex: 1,
+                  x: 0,
+                  opacity: 1
+                },
+                exit: (direction: number) => ({
+                  zIndex: 0,
+                  x: direction < 0 ? 1000 : -1000,
+                  opacity: 0
+                })
+              }}
+              className="absolute inset-0 flex flex-col"
+            >
+              <CardContent 
+                className="flex-grow overflow-y-auto p-4 flex flex-col"
+                ref={cardContentRef}
               >
-                {step}
-              </motion.div>
-            ))}
-          </div>
-        </CardContent>
-
-        {/* Updated docked instruction and steps section */}
-        <div className="bg-white dark:bg-gray-800 p-4 space-y-4 flex flex-col">
-          {!isCompleted ? (
-            <>
-              {showStepInstruction && (
                 <div 
-                  ref={instructionRef}
-                  className="text-base font-medium text-center text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 p-2 rounded-md relative"
+                  ref={questionRef}
+                  className="text-lg font-semibold text-center text-gray-800 dark:text-gray-200 flex items-center justify-center mb-4"
+                  style={{ 
+                    fontSize: `${questionFontSize}px`,
+                    minHeight: '48px',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
                 >
-                  {problem.steps[currentStep].instruction}
-                  {showFloatingPoints && (
-                    <FloatingPoints x={animationPosition.x} y={animationPosition.y} />
+                  {problem.question}
+                  {showCounter && (
+                    <motion.div
+                      className="ml-2 bg-purple-200 dark:bg-purple-800 p-2 rounded-full flex items-center justify-center"
+                      animate={{ scale: showPointsAnimation ? [1, 1.2, 1] : 1 }}
+                      transition={{ duration: 0.3 }}
+                      ref={counterRef}
+                    >
+                      <Star className="w-5 h-5 text-yellow-500" />
+                      {isAnimating ? (
+                        <animated.span className="ml-1 text-base font-bold text-purple-600 dark:text-purple-300">
+                          {finalNumber.to(n => Math.floor(n))}
+                        </animated.span>
+                      ) : useSpringAnimation ? (
+                        <animated.span className="ml-1 text-base font-bold text-purple-600 dark:text-purple-300">
+                          {springNumber.to(n => Math.floor(n))}
+                        </animated.span>
+                      ) : (
+                        <motion.span
+                          key={questionPoints}
+                          initial={{ y: -20, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          transition={{ duration: 0.4 }}
+                          className="ml-1 text-base font-bold text-purple-600 dark:text-purple-300"
+                        >
+                          {questionPoints}
+                        </motion.span>
+                      )}
+                    </motion.div>
                   )}
                 </div>
-              )}
-              {isHorizontalMode ? (
-                <div className="flex items-center justify-between space-x-2">
-                  <Button onClick={handlePrevOption} variant="outline" size="icon">
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <div className="flex-grow">
+
+                <div className="space-y-1 flex-grow overflow-y-auto">
+                  {completedSteps.map((step, index) => (
                     <motion.div
-                      key={currentOptionIndex}
-                      initial={{ opacity: 0, x: 50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -50 }}
-                      transition={{ duration: 0.3 }}
-                      className="w-full"
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-sm font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 p-1 rounded-md"
                     >
-                      <Button
-                        className={`w-full text-sm py-3 px-2 h-auto whitespace-normal ${
-                          selectedAnswer === problem.steps[currentStep].options[currentOptionIndex]
-                            ? isCorrect
-                              ? 'bg-green-500 hover:bg-green-600'
-                              : 'bg-red-500 hover:bg-red-600'
-                            : 'bg-yellow-400 hover:bg-yellow-500 text-black'
-                        }`}
-                        onClick={(event) => handleAnswer(problem.steps[currentStep].options[currentOptionIndex], event)}
-                        disabled={isCorrect === true}
-                      >
-                        <span className="block text-left">
-                          {problem.steps[currentStep].options[currentOptionIndex]}
-                        </span>
-                      </Button>
-                    </motion.div>
-                  </div>
-                  <Button onClick={handleNextOption} variant="outline" size="icon">
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {problem.steps[currentStep].options.map((option, index) => (
-                    <motion.div key={index} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <Button
-                        className={`w-full text-sm py-3 px-2 h-auto whitespace-normal ${
-                          selectedAnswer === option
-                            ? isCorrect
-                              ? 'bg-green-500 hover:bg-green-600'
-                              : 'bg-red-500 hover:bg-red-600'
-                            : 'bg-yellow-400 hover:bg-yellow-500 text-black'
-                        }`}
-                        onClick={(event) => handleAnswer(option, event)}
-                        disabled={isCorrect === true}
-                      >
-                        <span className="block text-left" style={{ textAlign: 'center'}}>
-                          {option}
-                        </span>
-                      </Button>
+                      {step}
                     </motion.div>
                   ))}
                 </div>
-              )}
-              {isHorizontalMode && (
-                <Button
-                  onClick={handleConfirm}
-                  className="w-full text-base py-3 px-6 bg-purple-500 hover:bg-purple-600 text-white"
-                  disabled={isCorrect === true}
-                >
-                  Confirm
-                </Button>
-              )}
-            </>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="space-y-4 text-center"
-            >
-              <div className="text-xl font-bold text-green-600 dark:text-green-400">
-                Congratulations!
-              </div>
-              <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">
-                You solved the problem correctly!
-              </div>
-              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                <CheckCircle2 className="w-16 h-16 mx-auto text-green-500" />
-              </motion.div>
-              <Button
-                onClick={handleTryAnother}
-                className="text-base py-3 px-6 bg-purple-500 hover:bg-purple-600 text-white"
-              >
-                Try Another One <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </motion.div>
-          )}
+              </CardContent>
 
-          <CompletionStars show={showCompletionStars} />
+              {/* Docked instruction and steps section */}
+              <div className="bg-white dark:bg-gray-800 p-4 space-y-4 flex flex-col">
+                {!isCompleted ? (
+                  <>
+                    {showStepInstruction && (
+                      <div 
+                        ref={instructionRef}
+                        className="text-base font-medium text-center text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 p-2 rounded-md relative"
+                      >
+                        {problem.steps[currentStep].instruction}
+                        {showFloatingPoints && (
+                          <FloatingPoints x={animationPosition.x} y={animationPosition.y} />
+                        )}
+                      </div>
+                    )}
+                    {isHorizontalMode ? (
+                      <div className="flex items-center justify-between space-x-2">
+                        <Button onClick={handlePrevOption} variant="outline" size="icon">
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <div className="flex-grow">
+                          <motion.div
+                            key={currentOptionIndex}
+                            initial={{ opacity: 0, x: 50 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -50 }}
+                            transition={{ duration: 0.3 }}
+                            className="w-full"
+                          >
+                            <Button
+                              className={`w-full text-sm py-3 px-2 h-auto whitespace-normal ${
+                                selectedAnswer === problem.steps[currentStep].options[currentOptionIndex]
+                                  ? isCorrect
+                                    ? 'bg-green-500 hover:bg-green-600'
+                                    : 'bg-red-500 hover:bg-red-600'
+                                  : 'bg-yellow-400 hover:bg-yellow-500 text-black'
+                              }`}
+                              onClick={(event) => handleAnswer(problem.steps[currentStep].options[currentOptionIndex], event)}
+                              disabled={isCorrect === true}
+                            >
+                              <span className="block text-left">
+                                {problem.steps[currentStep].options[currentOptionIndex]}
+                              </span>
+                            </Button>
+                          </motion.div>
+                        </div>
+                        <Button onClick={handleNextOption} variant="outline" size="icon">
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {problem.steps[currentStep].options.map((option, index) => (
+                          <motion.div key={index} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                            <Button
+                              className={`w-full text-sm py-3 px-2 h-auto whitespace-normal ${
+                                selectedAnswer === option
+                                  ? isCorrect
+                                    ? 'bg-green-500 hover:bg-green-600'
+                                    : 'bg-red-500 hover:bg-red-600'
+                                  : 'bg-yellow-400 hover:bg-yellow-500 text-black'
+                              }`}
+                              onClick={(event) => handleAnswer(option, event)}
+                              disabled={isCorrect === true}
+                            >
+                              <span className="block text-left" style={{ textAlign: 'center'}}>
+                                {option}
+                              </span>
+                            </Button>
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
+                    {isHorizontalMode && (
+                      <Button
+                        onClick={handleConfirm}
+                        className="w-full text-base py-3 px-6 bg-purple-500 hover:bg-purple-600 text-white"
+                        disabled={isCorrect === true}
+                      >
+                        Confirm
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="space-y-4 text-center"
+                  >
+                    <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                      Congratulations!
+                    </div>
+                    <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                      You solved the problem correctly!
+                    </div>
+                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                      <CheckCircle2 className="w-16 h-16 mx-auto text-green-500" />
+                    </motion.div>
+                    <Button
+                      onClick={handleTryAnother}
+                      className="text-base py-3 px-6 bg-purple-500 hover:bg-purple-600 text-white"
+                    >
+                      Try Another One <ArrowRight className="ml-2 w-5 h-5" />
+                    </Button>
+                  </motion.div>
+                )}
+
+                <CompletionStars show={showCompletionStars} />
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
       </Card>
 
