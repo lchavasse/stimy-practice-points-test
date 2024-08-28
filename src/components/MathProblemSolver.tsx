@@ -12,6 +12,152 @@ const ANIMATION_DURATION = 0.8 // in seconds
 
 const problems = [
   {
+    question: "A garden is shaped like a rectangle. The length of the garden is twice the width. If the perimeter of the garden is 60 meters, find the dimensions of the garden.",
+    steps: [
+        {
+            instruction: "What could be the next step?",
+            options: [
+                "Define Variables for Garden Dimensions",
+                "Identify the Area of the Garden",
+                "Calculate the Total Cost of Gardening Supplies",
+                "Determine the Type of Soil Needed for the Garden"
+            ],
+            correctAnswer: "Define Variables for Garden Dimensions"
+        },
+        {
+            instruction: "Define Variables for Garden Dimensions",
+            options: [
+                "Let \\( w \\) be the width of the garden in meters. Then, the length \\( l = 2w \\) in meters.",
+                "Let \\( w \\) be the length of the garden in meters. Then, the width \\( l = 2w \\) in meters.",
+                "Let \\( w \\) be the area of the garden in square meters. Then, the length \\( l = 2w \\) in meters.",
+                "Let \\( w \\) be the height of the garden in meters. Then, the length \\( l = 2w \\) in meters."
+            ],
+            correctAnswer: "Let \\( w \\) be the width of the garden in meters. Then, the length \\( l = 2w \\) in meters."
+        },
+        {
+            instruction: "What could be the next step?",
+            options: [
+                "Present the Perimeter Formula for a Rectangle",
+                "Explain the Benefits of Gardening",
+                "Discuss Different Types of Plants for a Garden",
+                "Outline the Tools Needed for Garden Maintenance"
+            ],
+            correctAnswer: "Present the Perimeter Formula for a Rectangle"
+        },
+        {
+            instruction: "Present the Perimeter Formula for a Rectangle",
+            options: [
+                "\\[ P = 2(l + w) \\]",
+                "\\[ P = 2(l - w) \\]",
+                "\\[ P = l + w \\]",
+                "\\[ P = 4l \\]"
+            ],
+            correctAnswer: "\\[ P = 2(l + w) \\]"
+        },
+        {
+            instruction: "What could be the next step?",
+            options: [
+                "Substitute Known Values into the Perimeter Formula",
+                "Assume a Different Perimeter for the Garden",
+                "Calculate the Volume of the Garden",
+                "Estimate the Time Required for Garden Maintenance"
+            ],
+            correctAnswer: "Substitute Known Values into the Perimeter Formula"
+        },
+        {
+            instruction: "Substitute Known Values into the Perimeter Formula",
+            options: [
+                "\\[ 60 = 2(2w + w) \\]",
+                "60 = 2(2w - w)",
+                "60 = 2(2w + 2w)",
+                "60 = 2(3w + w)"
+            ],
+            correctAnswer: "\\[ 60 = 2(2w + w) \\]"
+        },
+        {
+            instruction: "What could be the next step?",
+            options: [
+                "Simplify the Equation",
+                "Convert the Perimeter into Area Units",
+                "Introduce a New Variable for Garden Height",
+                "Evaluate the Cost of Garden Maintenance per Meter"
+            ],
+            correctAnswer: "Simplify the Equation"
+        },
+        {
+            instruction: "Simplify the Equation",
+            options: [
+                "\\[ 60 = 2(3w) \\]",
+                "60 = 2(2w + w)",
+                "60 = 2(3w + 2w)",
+                "60 = 2(2w - 2w)"
+            ],
+            correctAnswer: "\\[ 60 = 2(3w) \\]"
+        },
+        {
+            instruction: "What could be the next step?",
+            options: [
+                "Further Simplify the Equation",
+                "Introduce a New Variable for Garden Width",
+                "Calculate the Total Height of the Garden",
+                "Convert the Equation into a Graphical Representation"
+            ],
+            correctAnswer: "Further Simplify the Equation"
+        },
+        {
+            instruction: "Further Simplify the Equation",
+            options: [
+                "\\[ 60 = 6w \\]",
+                "60 = 3w",
+                "60 = 12w",
+                "60 = 4w"
+            ],
+            correctAnswer: "\\[ 60 = 6w \\]"
+        },
+        {
+            instruction: "What could be the next step?",
+            options: [
+                "Solve for Width 'w'",
+                "Determine the Time Needed to Plant the Garden",
+                "Estimate the Height of the Garden's Fencing",
+                "Calculate the Total Number of Plants Required for the Garden"
+            ],
+            correctAnswer: "Solve for Width 'w'"
+        },
+        {
+            instruction: "Solve for Width 'w'",
+            options: [
+                "\\[ w = \\frac{60}{6} = 10 \\text{ meters} \\]",
+                "w = \frac{60}{5} = 12 \text{ meters}",
+                "w = \frac{60}{4} = 15 \text{ meters}",
+                "w = \frac{60}{8} = 7.5 \text{ meters}"
+            ],
+            correctAnswer: "\\[ w = \\frac{60}{6} = 10 \\text{ meters} \\]"
+        },
+        {
+            instruction: "What could be the next step?",
+            options: [
+                "Calculate the Length 'l'",
+                "Determine the Total Weight of the Garden Soil",
+                "Calculate the Amount of Fertilizer Needed for the Garden",
+                "Estimate the Growth Rate of Plants in the Garden"
+            ],
+            correctAnswer: "Calculate the Length 'l'"
+        },
+        {
+            instruction: "Calculate the Length 'l'",
+            options: [
+                "\\[ l = 2w = 2 \\times 10 = 20 \\text{ meters} \\]",
+                "l = 2w = 2 \times 5 = 10 \\text{ meters}",
+                "l = 2w = 2 \times 15 = 30 \\text{ meters}",
+                "l = 2w = 2 \\times 8 = 16 \\text{ meters}"
+            ],
+            correctAnswer: "\\[ l = 2w = 2 \\times 10 = 20 \\text{ meters} \\]"
+        }
+    ]
+},
+  
+  {
     question: "Solve 3x - 2y = 6 + x, y = 2",
     steps: [
       {
@@ -139,12 +285,16 @@ export default function Component() {
   const [questionPoints, setQuestionPoints] = useState(0)
   const [prevQuestionPoints, setPrevQuestionPoints] = useState(0)
   const instructionRef = useRef<HTMLDivElement>(null)
+  const [instructionFontSize, setInstructionFontSize] = useState(16) // Start with 16px font size
   const [useSpringAnimation, setUseSpringAnimation] = useState(true)
   const [pendingPoints, setPendingPoints] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
   const [showCounter, setShowCounter] = useState(true)
   const [showCompletionStars, setShowCompletionStars] = useState(false)
   const [showFloatingPoints, setShowFloatingPoints] = useState(false)
+  const [instructionHeight, setInstructionHeight] = useState('auto')
+  const [questionFontSize, setQuestionFontSize] = useState(18) // Start with 18px font size for the question
+  const questionRef = useRef<HTMLDivElement>(null)
 
   const ANIMATION_DELAY = 0.2 // in seconds (unchanged)
 
@@ -310,6 +460,38 @@ export default function Component() {
     config: { duration: 1500 }, // increased from 1000 to 1500 milliseconds
   })
 
+  useEffect(() => {
+    const adjustQuestionSize = () => {
+      if (questionRef.current) {
+        const element = questionRef.current;
+        const maxHeight = 48; // Maximum height for two lines (adjust as needed)
+        
+        // Reset font size to default
+        element.style.fontSize = '18px';
+        setQuestionFontSize(18);
+
+        // Force a reflow to get accurate scrollHeight
+        void element.offsetHeight;
+
+        // Check if content overflows
+        if (element.scrollHeight > maxHeight) {
+          // Gradually decrease font size until it fits
+          let fontSize = 17;
+          while (element.scrollHeight > maxHeight && fontSize > 12) {
+            element.style.fontSize = `${fontSize}px`;
+            setQuestionFontSize(fontSize);
+            fontSize--;
+            
+            // Force a reflow to get accurate scrollHeight
+            void element.offsetHeight;
+          }
+        }
+      }
+    };
+
+    adjustQuestionSize();
+  }, [problemIndex]);
+
   return (
     <div className="w-full h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900">
       <Card className="w-[360px] h-[640px] overflow-hidden flex flex-col relative card">
@@ -326,7 +508,16 @@ export default function Component() {
           </div>
         </div>
         <CardContent className="flex-grow overflow-y-auto space-y-4 relative p-4">
-          <div className="text-lg font-semibold text-center text-gray-800 dark:text-gray-200 flex items-center justify-center">
+          <div 
+            ref={questionRef}
+            className="text-lg font-semibold text-center text-gray-800 dark:text-gray-200 flex items-center justify-center"
+            style={{ 
+              fontSize: `${questionFontSize}px`,
+              minHeight: '48px', // Ensure space for up to two lines
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
             {problem.question}
             {showCounter && (
               <motion.div
@@ -374,10 +565,7 @@ export default function Component() {
 
           {!isCompleted ? (
             <>
-              <div 
-                ref={instructionRef}
-                className="text-base font-medium text-center text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 p-2 rounded-md relative"
-              >
+              <div className="text-base font-medium text-center text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 p-2 rounded-md relative">
                 Step {currentStep + 1}: {problem.steps[currentStep].instruction}
                 {showFloatingPoints && (
                   <FloatingPoints x={animationPosition.x} y={animationPosition.y} />
@@ -398,7 +586,7 @@ export default function Component() {
                       className="w-full"
                     >
                       <Button
-                        className={`w-full text-sm py-3 ${
+                        className={`w-full text-sm py-3 px-2 h-auto whitespace-normal ${
                           selectedAnswer === problem.steps[currentStep].options[currentOptionIndex]
                             ? isCorrect
                               ? 'bg-green-500 hover:bg-green-600'
@@ -408,7 +596,9 @@ export default function Component() {
                         onClick={(event) => handleAnswer(problem.steps[currentStep].options[currentOptionIndex], event)}
                         disabled={isCorrect === true}
                       >
-                        {problem.steps[currentStep].options[currentOptionIndex]}
+                        <span className="block text-left">
+                          {problem.steps[currentStep].options[currentOptionIndex]}
+                        </span>
                       </Button>
                     </motion.div>
                   </div>
@@ -421,7 +611,7 @@ export default function Component() {
                   {problem.steps[currentStep].options.map((option, index) => (
                     <motion.div key={index} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                       <Button
-                        className={`w-full text-sm py-3 ${
+                        className={`w-full text-sm py-3 px-2 h-auto whitespace-normal ${
                           selectedAnswer === option
                             ? isCorrect
                               ? 'bg-green-500 hover:bg-green-600'
@@ -431,7 +621,9 @@ export default function Component() {
                         onClick={(event) => handleAnswer(option, event)}
                         disabled={isCorrect === true}
                       >
-                        {option}
+                        <span className="block text-left" style={{ textAlign: 'center'}}>
+                          {option}
+                        </span>
                       </Button>
                     </motion.div>
                   ))}
@@ -440,7 +632,7 @@ export default function Component() {
               {isHorizontalMode && (
                 <Button
                   onClick={handleConfirm}
-                  className="w-full text-base py-3 bg-purple-500 hover:bg-purple-600 text-white"
+                  className="w-full text-base py-3 px-6 bg-purple-500 hover:bg-purple-600 text-white"
                   disabled={isCorrect === true}
                 >
                   Confirm
