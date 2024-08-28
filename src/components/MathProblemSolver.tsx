@@ -492,13 +492,41 @@ export default function Component() {
     adjustQuestionSize();
   }, [problemIndex]);
 
+  const handlePrevProblem = () => {
+    setProblemIndex((prevIndex) => (prevIndex - 1 + problems.length) % problems.length)
+    resetProblemState()
+  }
+
+  const handleNextProblem = () => {
+    setProblemIndex((prevIndex) => (prevIndex + 1) % problems.length)
+    resetProblemState()
+  }
+
+  const resetProblemState = () => {
+    setCurrentStep(0)
+    setSelectedAnswer(null)
+    setIsCorrect(null)
+    setCompletedSteps([])
+    setIsCompleted(false)
+    setCurrentOptionIndex(0)
+    setQuestionPoints(0)
+    setFloatingPoints(0)
+    setPrevQuestionPoints(0)
+    setShowCounter(true)
+  }
+
   return (
     <div className="w-full h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900">
       <Card className="w-[360px] h-[640px] overflow-hidden flex flex-col relative card">
         <div className="bg-purple-600 text-white p-4 flex items-center justify-between">
-          <Button variant="ghost" size="icon" className="text-white">
-            <ArrowLeft className="h-6 w-6" />
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button variant="ghost" size="icon" className="text-white" onClick={handlePrevProblem}>
+              <ArrowLeft className="h-6 w-6" />
+            </Button>
+            <Button variant="ghost" size="icon" className="text-white" onClick={handleNextProblem}>
+              <ArrowRight className="h-6 w-6" />
+            </Button>
+          </div>
           <span className="text-xl font-bold">Practice</span>
           <div className="flex items-center" ref={headerCounterRef}>
             <Star className="h-5 w-5 text-yellow-400 mr-1" />
@@ -666,9 +694,12 @@ export default function Component() {
 
           <CompletionStars show={showCompletionStars} />
         </CardContent>
+      </Card>
 
-        {/* Toggle button for horizontal mode */}
-        <div className="absolute bottom-4 right-4 flex items-center space-x-2">
+      {/* Toggle buttons moved outside the card */}
+      <div className="absolute bottom-4 right-4 flex flex-col items-end space-y-2">
+        {/* Horizontal mode toggle */}
+        <div className="flex items-center space-x-2">
           <div className="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 py-1 rounded shadow text-center">
             <div>Horizontal</div>
             <div>mode</div>
@@ -682,8 +713,8 @@ export default function Component() {
           </Button>
         </div>
 
-        {/* Toggle button for point animation */}
-        <div className="absolute bottom-4 left-4 flex items-center space-x-2">
+        {/* Point animation toggle */}
+        <div className="flex items-center space-x-2">
           <div className="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 py-1 rounded shadow text-center">
             <div>Point</div>
             <div>animation</div>
@@ -696,7 +727,7 @@ export default function Component() {
             <CustomToggle isActive={useSpringAnimation} />
           </Button>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }
