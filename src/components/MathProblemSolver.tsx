@@ -96,7 +96,7 @@ const CompletionStars = ({ show }: { show: boolean }) => {
   )
 }
 
-const MiniCarousel = ({ totalQuestions, currentQuestion, onQuestionSelect }) => {
+const MiniCarousel = ({ totalQuestions, currentQuestion, onQuestionSelect }: { totalQuestions: number, currentQuestion: number, onQuestionSelect: (index: number) => void }) => {
   // Only render the carousel if we're not on the last question
   if (currentQuestion === totalQuestions - 1) return null;
 
@@ -284,7 +284,7 @@ export default function Component() {
 
   const handleConfirm = () => {
     const selectedOption = problem.steps[currentStep].options[currentOptionIndex]
-    handleAnswer(selectedOption)
+    handleAnswer(selectedOption || '')
   }
 
   // Create a custom toggle component
@@ -613,11 +613,11 @@ export default function Component() {
                                   : 'bg-red-500 hover:bg-red-600'
                                 : 'bg-yellow-400 hover:bg-yellow-500 text-black'
                             }`}
-                            onClick={(event) => handleAnswer(problem.steps[currentStep].options[currentOptionIndex], event)}
+                            onClick={(event) => handleAnswer(problem.steps[currentStep].options[currentOptionIndex] || '', event)}
                             disabled={isCorrect === true}
                           >
                             <span className="block text-left">
-                              <LatexRenderer text={problem.steps[currentStep].options[currentOptionIndex]} classes={{text:'', inline:''}} />
+                              <LatexRenderer text={problem.steps[currentStep].options[currentOptionIndex] || ''} classes={{text:'', inline:''}} />
                             </span>
                           </Button>
                         </motion.div>
@@ -638,11 +638,11 @@ export default function Component() {
                                   : 'bg-red-500 hover:bg-red-600'
                                 : 'bg-yellow-400 hover:bg-yellow-500 text-black'
                             }`}
-                            onClick={(event) => handleAnswer(option, event)}
+                            onClick={(event) => handleAnswer(option || '', event)}
                             disabled={isCorrect === true}
                           >
                             <span className="block text-left" style={{ textAlign: 'center'}}>
-                              <LatexRenderer text={option} classes={{text:'', inline:''}} />
+                              <LatexRenderer text={option || ''} classes={{text:'', inline:''}} />
                             </span>
                           </Button>
                         </motion.div>
