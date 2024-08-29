@@ -19,6 +19,7 @@ interface LatexRendererProps {
   };
 }
 
+// split text and latex
 const LatexRenderer: React.FC<LatexRendererProps> = ({ text, classes }) => {
   const parts = text.split(/(\$\$.*?\$\$|\$.*?\$)/);
 
