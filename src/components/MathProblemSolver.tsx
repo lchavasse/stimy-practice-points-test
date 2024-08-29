@@ -20,7 +20,7 @@ interface LatexRendererProps {
 }
 
 const LatexRenderer: React.FC<LatexRendererProps> = ({ text, classes }) => {
-  const parts = text.split(/(\$\$.*?\$\$|\$.*?\$)/s);
+  const parts = text.split(/(\$\$.*?\$\$|\$.*?\$)/);
 
   return (
     <div className="flex flex-wrap items-top">
