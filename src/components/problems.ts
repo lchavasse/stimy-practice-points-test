@@ -16,7 +16,7 @@ export const problems = [
       },
       {
         instruction: "Simplify the equation. What's the result?",
-        options: [, "2x = 8", "x = 5", "2x = 10", "x = 4"],
+        options: ["2x = 8", "x = 5", "2x = 10", "x = 4"],
         correctAnswer: "2x = 10",
         type: 'horizontal'
       },
