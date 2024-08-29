@@ -6,208 +6,38 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { CheckCircle2, Star, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, LayoutGrid, LayoutList } from 'lucide-react'
 import { useSpring, animated } from 'react-spring'
+import ReactMarkdown from 'react-markdown'
+import 'katex/dist/katex.min.css';
+import { InlineMath, BlockMath } from 'react-katex';
+import { problems } from './problems';
+
+interface LatexRendererProps {
+  text: string;
+  classes: {
+    text: string;
+    inline: string;
+  };
+}
+
+const LatexRenderer: React.FC<LatexRendererProps> = ({ text, classes }) => {
+  const parts = text.split(/(\$\$.*?\$\$|\$.*?\$)/s);
+
+  return (
+    <div className="flex flex-wrap items-top">
+      {parts.map((part, index) => {
+        if (part.startsWith('$$') && part.endsWith('$$')) {
+          return <BlockMath key={index} math={part.slice(2, -2)} />;
+        } else if (part.startsWith('$') && part.endsWith('$')) {
+          return <div key={index} className={classes.inline}><InlineMath math={part.slice(1, -1)}/></div>;
+        }
+        return <span key={index} className={classes.text}>{part}</span>;
+      })}
+    </div>
+  );
+};
 
 // Define ANIMATION_DURATION here, outside of any component
 const ANIMATION_DURATION = 0.8 // in seconds
-
-const problems = [
-  {
-    question: "A garden is shaped like a rectangle. The length of the garden is twice the width. If the perimeter of the garden is 60 meters, find the dimensions of the garden.",
-    steps: [
-        {
-            instruction: "What could be the next step?",
-            options: [
-                "Define Variables for Garden Dimensions",
-                "Identify the Area of the Garden",
-                "Calculate the Total Cost of Gardening Supplies",
-                "Determine the Type of Soil Needed for the Garden"
-            ],
-            correctAnswer: "Define Variables for Garden Dimensions"
-        },
-        {
-            instruction: "Define Variables for Garden Dimensions",
-            options: [
-                "Let \\( w \\) be the width of the garden in meters. Then, the length \\( l = 2w \\) in meters.",
-                "Let \\( w \\) be the length of the garden in meters. Then, the width \\( l = 2w \\) in meters.",
-                "Let \\( w \\) be the area of the garden in square meters. Then, the length \\( l = 2w \\) in meters.",
-                "Let \\( w \\) be the height of the garden in meters. Then, the length \\( l = 2w \\) in meters."
-            ],
-            correctAnswer: "Let \\( w \\) be the width of the garden in meters. Then, the length \\( l = 2w \\) in meters."
-        },
-        {
-            instruction: "What could be the next step?",
-            options: [
-                "Present the Perimeter Formula for a Rectangle",
-                "Explain the Benefits of Gardening",
-                "Discuss Different Types of Plants for a Garden",
-                "Outline the Tools Needed for Garden Maintenance"
-            ],
-            correctAnswer: "Present the Perimeter Formula for a Rectangle"
-        },
-        {
-            instruction: "Present the Perimeter Formula for a Rectangle",
-            options: [
-                "\\[ P = 2(l + w) \\]",
-                "\\[ P = 2(l - w) \\]",
-                "\\[ P = l + w \\]",
-                "\\[ P = 4l \\]"
-            ],
-            correctAnswer: "\\[ P = 2(l + w) \\]"
-        },
-        {
-            instruction: "What could be the next step?",
-            options: [
-                "Substitute Known Values into the Perimeter Formula",
-                "Assume a Different Perimeter for the Garden",
-                "Calculate the Volume of the Garden",
-                "Estimate the Time Required for Garden Maintenance"
-            ],
-            correctAnswer: "Substitute Known Values into the Perimeter Formula"
-        },
-        {
-            instruction: "Substitute Known Values into the Perimeter Formula",
-            options: [
-                "\\[ 60 = 2(2w + w) \\]",
-                "60 = 2(2w - w)",
-                "60 = 2(2w + 2w)",
-                "60 = 2(3w + w)"
-            ],
-            correctAnswer: "\\[ 60 = 2(2w + w) \\]"
-        },
-        {
-            instruction: "What could be the next step?",
-            options: [
-                "Simplify the Equation",
-                "Convert the Perimeter into Area Units",
-                "Introduce a New Variable for Garden Height",
-                "Evaluate the Cost of Garden Maintenance per Meter"
-            ],
-            correctAnswer: "Simplify the Equation"
-        },
-        {
-            instruction: "Simplify the Equation",
-            options: [
-                "\\[ 60 = 2(3w) \\]",
-                "60 = 2(2w + w)",
-                "60 = 2(3w + 2w)",
-                "60 = 2(2w - 2w)"
-            ],
-            correctAnswer: "\\[ 60 = 2(3w) \\]"
-        },
-        {
-            instruction: "What could be the next step?",
-            options: [
-                "Further Simplify the Equation",
-                "Introduce a New Variable for Garden Width",
-                "Calculate the Total Height of the Garden",
-                "Convert the Equation into a Graphical Representation"
-            ],
-            correctAnswer: "Further Simplify the Equation"
-        },
-        {
-            instruction: "Further Simplify the Equation",
-            options: [
-                "\\[ 60 = 6w \\]",
-                "60 = 3w",
-                "60 = 12w",
-                "60 = 4w"
-            ],
-            correctAnswer: "\\[ 60 = 6w \\]"
-        },
-        {
-            instruction: "What could be the next step?",
-            options: [
-                "Solve for Width 'w'",
-                "Determine the Time Needed to Plant the Garden",
-                "Estimate the Height of the Garden's Fencing",
-                "Calculate the Total Number of Plants Required for the Garden"
-            ],
-            correctAnswer: "Solve for Width 'w'"
-        },
-        {
-            instruction: "Solve for Width 'w'",
-            options: [
-                "\\[ w = \\frac{60}{6} = 10 \\text{ meters} \\]",
-                "w = \frac{60}{5} = 12 \text{ meters}",
-                "w = \frac{60}{4} = 15 \text{ meters}",
-                "w = \frac{60}{8} = 7.5 \text{ meters}"
-            ],
-            correctAnswer: "\\[ w = \\frac{60}{6} = 10 \\text{ meters} \\]"
-        },
-        {
-            instruction: "What could be the next step?",
-            options: [
-                "Calculate the Length 'l'",
-                "Determine the Total Weight of the Garden Soil",
-                "Calculate the Amount of Fertilizer Needed for the Garden",
-                "Estimate the Growth Rate of Plants in the Garden"
-            ],
-            correctAnswer: "Calculate the Length 'l'"
-        },
-        {
-            instruction: "Calculate the Length 'l'",
-            options: [
-                "\\[ l = 2w = 2 \\times 10 = 20 \\text{ meters} \\]",
-                "l = 2w = 2 \times 5 = 10 \\text{ meters}",
-                "l = 2w = 2 \times 15 = 30 \\text{ meters}",
-                "l = 2w = 2 \\times 8 = 16 \\text{ meters}"
-            ],
-            correctAnswer: "\\[ l = 2w = 2 \\times 10 = 20 \\text{ meters} \\]"
-        }
-    ]
-},
-  
-  {
-    question: "Solve 3x - 2y = 6 + x, y = 2",
-    steps: [
-      {
-        instruction: "What is the value of y?",
-        options: ["1", "2", "3", "4"],
-        correctAnswer: "2"
-      },
-      {
-        instruction: "Substitute y = 2 into the equation. What does it become?",
-        options: ["3x - 4 = 6 + x", "3x - 2 = 6 + x", "3x - 6 = 6 + x", "3x = 6 + x"],
-        correctAnswer: "3x - 4 = 6 + x"
-      },
-      {
-        instruction: "Simplify the equation. What's the result?",
-        options: ["2x = 10", "2x = 8", "x = 5", "x = 4"],
-        correctAnswer: "2x = 10"
-      },
-      {
-        instruction: "Solve for x. What's the final answer?",
-        options: ["x = 3", "x = 4", "x = 5", "x = 6"],
-        correctAnswer: "x = 5"
-      }
-    ]
-  },
-  {
-    question: "Solve 3x^2 + 10x - 8 = 0",
-    steps: [
-      {
-        instruction: "What is the first step to solve this quadratic equation?",
-        options: ["Factor the equation", "Use the quadratic formula", "Complete the square", "Guess and check"],
-        correctAnswer: "Factor the equation"
-      },
-      {
-        instruction: "What are the factors of 3x^2 + 10x - 8?",
-        options: ["(3x - 2)(x + 4)", "(3x + 4)(x - 2)", "(3x + 2)(x - 4)", "(3x - 4)(x + 2)"],
-        correctAnswer: "(3x - 2)(x + 4)"
-      },
-      {
-        instruction: "Set each factor to zero. What are the two equations?",
-        options: ["3x - 2 = 0 and x + 4 = 0", "3x + 4 = 0 and x - 2 = 0", "3x + 2 = 0 and x - 4 = 0", "3x - 4 = 0 and x + 2 = 0"],
-        correctAnswer: "3x - 2 = 0 and x + 4 = 0"
-      },
-      {
-        instruction: "Solve both equations. What are the values of x?",
-        options: ["x = 2/3 and x = -4", "x = -2/3 and x = 4", "x = 2/3 and x = 4", "x = -2/3 and x = -4"],
-        correctAnswer: "x = 2/3 and x = -4"
-      }
-    ]
-  }
-]
 
 const FloatingPoints = ({ x, y }: { x: number; y: number }) => (
   <motion.div
@@ -265,6 +95,26 @@ const CompletionStars = ({ show }: { show: boolean }) => {
   )
 }
 
+const MiniCarousel = ({ totalQuestions, currentQuestion, onQuestionSelect }) => {
+  // Only render the carousel if we're not on the last question
+  if (currentQuestion === totalQuestions - 1) return null;
+
+  return (
+    <div className="flex justify-center space-x-2 mt-1">
+      {Array.from({ length: totalQuestions }, (_, i) => (
+        <motion.div
+          key={i}
+          className={`w-2 h-2 rounded-full cursor-pointer
+                      ${i === currentQuestion ? 'bg-white' : 'bg-white/50'}`}
+          whileHover={{ scale: 1.2 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onQuestionSelect(i)}
+        />
+      ))}
+    </div>
+  );
+};
+
 export default function Component() {
   const [problemIndex, setProblemIndex] = useState(0)
   const [currentStep, setCurrentStep] = useState(0)
@@ -280,7 +130,6 @@ export default function Component() {
   const [isCompleted, setIsCompleted] = useState(false)
   const [showFinalAnimation, setShowFinalAnimation] = useState(false)
   const [currentOptionIndex, setCurrentOptionIndex] = useState(0)
-  const [isHorizontalMode, setIsHorizontalMode] = useState(false)
   const [floatingPoints, setFloatingPoints] = useState(0)
   const [questionPoints, setQuestionPoints] = useState(0)
   const [prevQuestionPoints, setPrevQuestionPoints] = useState(0)
@@ -297,6 +146,7 @@ export default function Component() {
   const questionRef = useRef<HTMLDivElement>(null)
   const [showStepInstruction, setShowStepInstruction] = useState(true)
   const cardContentRef = useRef<HTMLDivElement>(null)
+  const [isHorizontalMode, setIsHorizontalMode] = useState(false)
 
   const ANIMATION_DELAY = 0.2 // in seconds (unchanged)
 
@@ -374,7 +224,7 @@ export default function Component() {
         setShowPointsAnimation(false)
         setShowFloatingPoints(false)
       }, ANIMATION_DURATION * 1000)
-      setCompletedSteps([...completedSteps, `Step ${currentStep + 1}: ${answer}`])
+      setCompletedSteps([...completedSteps, `${currentStep + 1})   ${answer}`])
       setTimeout(() => {
         if (currentStep < problem.steps.length - 1) {
           setCurrentStep(currentStep + 1)
@@ -436,18 +286,6 @@ export default function Component() {
     handleAnswer(selectedOption)
   }
 
-  const toggleMode = () => {
-    setIsHorizontalMode(prev => !prev)
-  }
-
-  const toggleAnimationType = () => {
-    setUseSpringAnimation(prev => !prev)
-  }
-
-  const toggleStepInstruction = () => {
-    setShowStepInstruction(prev => !prev)
-  }
-
   // Create a custom toggle component
   const CustomToggle = ({ isActive }: { isActive: boolean }) => (
     <div className={`w-6 h-6 flex items-center justify-center ${isActive ? 'text-purple-600' : 'text-gray-400'}`}>
@@ -470,38 +308,6 @@ export default function Component() {
     number: isAnimating ? 0 : questionPoints,
     config: { duration: 1500 }, // increased from 1000 to 1500 milliseconds
   })
-
-  useEffect(() => {
-    const adjustQuestionSize = () => {
-      if (questionRef.current) {
-        const element = questionRef.current;
-        const maxHeight = 48; // Maximum height for two lines (adjust as needed)
-        
-        // Reset font size to default
-        element.style.fontSize = '18px';
-        setQuestionFontSize(18);
-
-        // Force a reflow to get accurate scrollHeight
-        void element.offsetHeight;
-
-        // Check if content overflows
-        if (element.scrollHeight > maxHeight) {
-          // Gradually decrease font size until it fits
-          let fontSize = 17;
-          while (element.scrollHeight > maxHeight && fontSize > 12) {
-            element.style.fontSize = `${fontSize}px`;
-            setQuestionFontSize(fontSize);
-            fontSize--;
-            
-            // Force a reflow to get accurate scrollHeight
-            void element.offsetHeight;
-          }
-        }
-      }
-    };
-
-    adjustQuestionSize();
-  }, [problemIndex]);
 
   const [direction, setDirection] = useState(0);
 
@@ -539,6 +345,7 @@ export default function Component() {
     setIsCorrect(null);
     setCurrentOptionIndex(0);
     setShowCounter(progress.showCounter);
+    setIsAnimating(false); // Reset animation state
   }
 
   const saveProblemProgress = () => {
@@ -558,25 +365,96 @@ export default function Component() {
     saveProblemProgress();
   }, [currentStep, completedSteps, isCompleted, questionPoints]);
 
+  const handleQuestionSelect = (index: number) => {
+    const direction = index > problemIndex ? 1 : -1;
+    setDirection(direction);
+    setProblemIndex(index);
+    loadProblemProgress(index);
+  };
+
+  useEffect(() => {
+    const adjustQuestionSize = () => {
+      if (questionRef.current) {
+        const element = questionRef.current;
+        const maxHeight = 64; // Maximum height for two lines (adjust as needed)
+        
+        // Reset font size to default
+        element.style.fontSize = '18px';
+        setQuestionFontSize(18);
+
+        // Force a reflow to get accurate scrollHeight
+        void element.offsetHeight;
+
+        // Check if content overflows
+        if (element.scrollHeight > maxHeight) {
+          // Gradually decrease font size until it fits
+          let fontSize = 17;
+          while (element.scrollHeight > maxHeight && fontSize > 12) {
+            element.style.fontSize = `${fontSize}px`;
+            setQuestionFontSize(fontSize);
+            fontSize--;
+            
+            // Force a reflow to get accurate scrollHeight
+            void element.offsetHeight;
+          }
+        }
+      }
+    };
+
+    adjustQuestionSize();
+  }, [problemIndex]);
+
+  const toggleMode = () => {
+    setIsHorizontalMode(prev => !prev)
+  }
+
+  const toggleAnimationType = () => {
+    setUseSpringAnimation(prev => !prev)
+  }
+
+  const toggleStepInstruction = () => {
+    setShowStepInstruction(prev => !prev)
+  }
+
+  useEffect(() => {
+    // Set isHorizontalMode based on the current step's type
+    setIsHorizontalMode(problem.steps[currentStep].type === 'horizontal');
+  }, [currentStep, problemIndex]);
+
   return (
     <div className="w-full h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900">
       <Card className="w-[360px] h-[640px] overflow-hidden flex flex-col relative card">
         {/* Header - stays fixed */}
-        <div className="bg-purple-600 text-white p-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon" className="text-white" onClick={handlePrevProblem}>
-              <ArrowLeft className="h-6 w-6" />
-            </Button>
-            <Button variant="ghost" size="icon" className="text-white" onClick={handleNextProblem}>
-              <ArrowRight className="h-6 w-6" />
-            </Button>
-          </div>
-          <span className="text-xl font-bold">Practice</span>
-          <div className="flex items-center" ref={headerCounterRef}>
-            <Star className="h-5 w-5 text-yellow-400 mr-1" />
-            <animated.span className="text-lg font-bold">
-              {increasingTotal.to(n => Math.floor(n))}
-            </animated.span>
+        <div className="bg-purple-600 text-white p-4">
+          <div className="flex items-center justify-between">
+            {/* Navigation buttons */}
+            <div className="flex items-center space-x-2">
+              <Button variant="ghost" size="icon" className="text-white" onClick={handlePrevProblem}>
+                <ArrowLeft className="h-6 w-6" />
+              </Button>
+              <Button variant="ghost" size="icon" className="text-white" onClick={handleNextProblem}>
+                <ArrowRight className="h-6 w-6" />
+              </Button>
+            </div>
+
+            {/* Practice text and carousel */}
+            <div className="flex flex-col items-center">
+              <span className="text-xl font-bold">Practice</span>
+              {/* Mini Carousel */}
+              <MiniCarousel
+                totalQuestions={problems.length}
+                currentQuestion={problemIndex}
+                onQuestionSelect={handleQuestionSelect}
+              />
+            </div>
+
+            {/* Points total */}
+            <div className="flex items-center" ref={headerCounterRef}>
+              <Star className="h-5 w-5 text-yellow-400 mr-1" />
+              <animated.span className="text-lg font-bold">
+                {increasingTotal.to(n => Math.floor(n))}
+              </animated.span>
+            </div>
           </div>
         </div>
 
@@ -612,25 +490,27 @@ export default function Component() {
               className="absolute inset-0 flex flex-col"
             >
               <CardContent 
-                className="flex-grow overflow-y-auto p-4 flex flex-col"
+                className="flex-grow overflow-y-auto pt-4 px-2 flex flex-col"
                 ref={cardContentRef}
               >
-                <div 
-                  ref={questionRef}
-                  className="text-lg font-semibold text-center text-gray-800 dark:text-gray-200 flex items-center justify-center mb-4"
-                  style={{ 
-                    fontSize: `${questionFontSize}px`,
-                    minHeight: '48px',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  {problem.question}
+                <div className="flex items-start mb-2 px-4">
+                  <div 
+                    ref={questionRef}
+                    className="text-lg font-semibold text-left text-gray-800 dark:text-gray-200 flex-grow"
+                    style={{ 
+                      fontSize: `${questionFontSize}px`,
+                      minHeight: '48px',
+                    }}
+                  >
+                    <LatexRenderer text={problem.question} classes={{text:'pt-2 px-2', inline:'pt-2'}} />
+                  </div>
+                  
                   {showCounter && (
                     <motion.div
-                      className="ml-2 bg-purple-200 dark:bg-purple-800 p-2 rounded-full flex items-center justify-center"
+                      className="ml-0 bg-purple-200 dark:bg-purple-800 p-2 rounded-full flex items-center justify-center flex-shrink-0"
                       animate={{ scale: showPointsAnimation ? [1, 1.2, 1] : 1 }}
                       transition={{ duration: 0.3 }}
+                      
                       ref={counterRef}
                     >
                       <Star className="w-5 h-5 text-yellow-500" />
@@ -657,109 +537,25 @@ export default function Component() {
                   )}
                 </div>
 
-                <div className="space-y-1 flex-grow overflow-y-auto">
+                <div className="space-y-1 flex-grow px-1 overflow-y-auto">
                   {completedSteps.map((step, index) => (
                     <motion.div
                       key={index}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="text-sm font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 p-1 rounded-md"
+                      className="text-sm font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-md px-2"
                     >
-                      {step}
+                      <LatexRenderer text={step} classes={{text:'', inline:'pl-1'}} />
                     </motion.div>
                   ))}
                 </div>
-              </CardContent>
 
-              {/* Docked instruction and steps section */}
-              <div className="bg-white dark:bg-gray-800 p-4 space-y-4 flex flex-col">
-                {!isCompleted ? (
-                  <>
-                    {showStepInstruction && (
-                      <div 
-                        ref={instructionRef}
-                        className="text-base font-medium text-center text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 p-2 rounded-md relative"
-                      >
-                        {problem.steps[currentStep].instruction}
-                        {showFloatingPoints && (
-                          <FloatingPoints x={animationPosition.x} y={animationPosition.y} />
-                        )}
-                      </div>
-                    )}
-                    {isHorizontalMode ? (
-                      <div className="flex items-center justify-between space-x-2">
-                        <Button onClick={handlePrevOption} variant="outline" size="icon">
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <div className="flex-grow">
-                          <motion.div
-                            key={currentOptionIndex}
-                            initial={{ opacity: 0, x: 50 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -50 }}
-                            transition={{ duration: 0.3 }}
-                            className="w-full"
-                          >
-                            <Button
-                              className={`w-full text-sm py-3 px-2 h-auto whitespace-normal ${
-                                selectedAnswer === problem.steps[currentStep].options[currentOptionIndex]
-                                  ? isCorrect
-                                    ? 'bg-green-500 hover:bg-green-600'
-                                    : 'bg-red-500 hover:bg-red-600'
-                                  : 'bg-yellow-400 hover:bg-yellow-500 text-black'
-                              }`}
-                              onClick={(event) => handleAnswer(problem.steps[currentStep].options[currentOptionIndex], event)}
-                              disabled={isCorrect === true}
-                            >
-                              <span className="block text-left">
-                                {problem.steps[currentStep].options[currentOptionIndex]}
-                              </span>
-                            </Button>
-                          </motion.div>
-                        </div>
-                        <Button onClick={handleNextOption} variant="outline" size="icon">
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        {problem.steps[currentStep].options.map((option, index) => (
-                          <motion.div key={index} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                            <Button
-                              className={`w-full text-sm py-3 px-2 h-auto whitespace-normal ${
-                                selectedAnswer === option
-                                  ? isCorrect
-                                    ? 'bg-green-500 hover:bg-green-600'
-                                    : 'bg-red-500 hover:bg-red-600'
-                                  : 'bg-yellow-400 hover:bg-yellow-500 text-black'
-                              }`}
-                              onClick={(event) => handleAnswer(option, event)}
-                              disabled={isCorrect === true}
-                            >
-                              <span className="block text-left" style={{ textAlign: 'center'}}>
-                                {option}
-                              </span>
-                            </Button>
-                          </motion.div>
-                        ))}
-                      </div>
-                    )}
-                    {isHorizontalMode && (
-                      <Button
-                        onClick={handleConfirm}
-                        className="w-full text-base py-3 px-6 bg-purple-500 hover:bg-purple-600 text-white"
-                        disabled={isCorrect === true}
-                      >
-                        Confirm
-                      </Button>
-                    )}
-                  </>
-                ) : (
+                {isCompleted && (
                   <motion.div
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="space-y-4 text-center"
+                    className="space-y-4 text-center mt-4"
                   >
                     <div className="text-xl font-bold text-green-600 dark:text-green-400">
                       Congratulations!
@@ -778,9 +574,91 @@ export default function Component() {
                     </Button>
                   </motion.div>
                 )}
+              </CardContent>
 
-                <CompletionStars show={showCompletionStars} />
-              </div>
+              {/* Docked instruction and steps section */}
+              {!isCompleted && (
+                <div className="bg-white dark:bg-gray-800 p-4 space-y-4 flex flex-col">
+                  {showStepInstruction && (
+                    <div 
+                      ref={instructionRef}
+                      className="text-base font-medium text-center text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 p-2 rounded-md relative"
+                    >
+                      {problem.steps[currentStep].instruction}
+                      {showFloatingPoints && (
+                        <FloatingPoints x={animationPosition.x} y={animationPosition.y} />
+                      )}
+                    </div>
+                  )}
+                  {isHorizontalMode ? (
+                    <div className="flex items-center justify-between space-x-2">
+                      <Button onClick={handlePrevOption} variant="outline" size="icon">
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <div className="flex-grow">
+                        <motion.div
+                          key={currentOptionIndex}
+                          initial={{ opacity: 0, x: 50 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -50 }}
+                          transition={{ duration: 0.3 }}
+                          className="w-full"
+                        >
+                          <Button
+                            className={`w-full text-sm py-3 px-2 h-auto whitespace-normal ${
+                              selectedAnswer === problem.steps[currentStep].options[currentOptionIndex]
+                                ? isCorrect
+                                  ? 'bg-green-500 hover:bg-green-600'
+                                  : 'bg-red-500 hover:bg-red-600'
+                                : 'bg-yellow-400 hover:bg-yellow-500 text-black'
+                            }`}
+                            onClick={(event) => handleAnswer(problem.steps[currentStep].options[currentOptionIndex], event)}
+                            disabled={isCorrect === true}
+                          >
+                            <span className="block text-left">
+                              <LatexRenderer text={problem.steps[currentStep].options[currentOptionIndex]} classes={{text:'', inline:''}} />
+                            </span>
+                          </Button>
+                        </motion.div>
+                      </div>
+                      <Button onClick={handleNextOption} variant="outline" size="icon">
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {problem.steps[currentStep].options.map((option, index) => (
+                        <motion.div key={index} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                          <Button
+                            className={`w-full text-sm py-3 px-2 h-auto whitespace-normal ${
+                              selectedAnswer === option
+                                ? isCorrect
+                                  ? 'bg-green-500 hover:bg-green-600'
+                                  : 'bg-red-500 hover:bg-red-600'
+                                : 'bg-yellow-400 hover:bg-yellow-500 text-black'
+                            }`}
+                            onClick={(event) => handleAnswer(option, event)}
+                            disabled={isCorrect === true}
+                          >
+                            <span className="block text-left" style={{ textAlign: 'center'}}>
+                              <LatexRenderer text={option} classes={{text:'', inline:''}} />
+                            </span>
+                          </Button>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                  {isHorizontalMode && (
+                    <Button
+                      onClick={handleConfirm}
+                      className="w-full text-base py-3 px-6 bg-purple-500 hover:bg-purple-600 text-white"
+                      disabled={isCorrect === true}
+                    >
+                      Confirm
+                    </Button>
+                  )}
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -836,3 +714,6 @@ export default function Component() {
     </div>
   )
 }
+
+  
+  
